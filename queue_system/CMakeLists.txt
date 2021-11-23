@@ -8,6 +8,8 @@ find_package(Threads REQUIRED)
 include_directories(shared)
 
 add_subdirectory(server)
+add_subdirectory(storage)
+
 add_executable(queue_system main.cpp)
 
-target_link_libraries(queue_system server Threads::Threads)
+target_link_libraries(queue_system server storage Threads::Threads)
