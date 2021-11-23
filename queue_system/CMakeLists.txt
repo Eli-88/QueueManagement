@@ -5,10 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Threads REQUIRED)
 
+include_directories(third_party)
 include_directories(shared)
 
 add_subdirectory(server)
 add_subdirectory(storage)
+add_subdirectory(protocol)
 
 add_executable(queue_system main.cpp)
 
