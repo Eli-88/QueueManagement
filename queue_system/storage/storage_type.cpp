@@ -1,4 +1,4 @@
-#include "queue_type.h"
+#include "storage_type.h"
 
 namespace queue_system {
 namespace storage {

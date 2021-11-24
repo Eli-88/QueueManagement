@@ -15,5 +15,11 @@ MsgType AddQueue::msg_type() { return MsgType::ADD_QUEUE; }
 PopQueue::PopQueue(const std::string &companyName) : BaseMsg(companyName) {}
 
 MsgType PopQueue::msg_type() { return MsgType::POP_QUEUE; }
+
+MsgType ConnectDisplay::msg_type() { return MsgType::CONNECT_DISPLAY; }
+
+ConnectDisplay::ConnectDisplay(const std::string &companyName)
+    : BaseMsg(companyName) {}
+
 } // namespace protocol
 } // namespace queue_system

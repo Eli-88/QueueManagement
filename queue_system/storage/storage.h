@@ -1,11 +1,11 @@
 #pragma once
 
-#include "queue_type.h"
+#include "storage_type.h" 
 #include <unordered_map>
 
 namespace queue_system {
 namespace storage {
-class QueueManager {
+class Storage {
   bool addOrganization(const std::string &companyName, size_t servingQueueSize);
   bool insert_waiting(const std::string &companyName, const Data &data);
   std::optional<Data> pop_serving(const std::string &companyName);

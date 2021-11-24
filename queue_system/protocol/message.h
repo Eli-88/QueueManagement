@@ -1,7 +1,7 @@
 #pragma once
 
-#include "constant.h"
 #include "base_message.h"
+#include "constant.h"
 #include "data.h"
 
 #include <string>
@@ -30,5 +30,12 @@ public:
   static MsgType msg_type();
   PopQueue(const std::string &companyName);
 };
+
+class ConnectDisplay : public BaseMsg {
+public:
+  static MsgType msg_type();
+  ConnectDisplay(const std::string &companyName);
+};
+
 } // namespace protocol
 } // namespace queue_system

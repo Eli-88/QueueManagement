@@ -6,7 +6,8 @@
 namespace queue_system {
 namespace protocol {
 
-using ProtocolType = std::variant<std::monostate, SignUp, AddQueue, PopQueue>;
+using ProtocolType =
+    std::variant<std::monostate, SignUp, AddQueue, PopQueue, ConnectDisplay>;
 
 class JsonDecoder {
 public:

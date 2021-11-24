@@ -73,9 +73,7 @@ void Server::poll() {
   while (isRunningPoll_.load()) {
     auto allSessions = poll_->poll_once();
     for (auto session : allSessions) {
-      if (not session->handle_request()) {
-        poll_->remove(session->fd());
-      }
+      session->handle_request();
     }
   }
 }
@@ -84,7 +82,10 @@ void Server::run(Session::Callback handler) {
   std::thread pollThread([this] { poll(); });
   while (isRunningServer_.load()) {
     const int connFd = on_accept();
-    auto session = sessionFactory_(connFd, handler);
+    auto session = sessionFactory_(connFd, handler,
+                                   [this](std::shared_ptr<Session> session) {
+                                     poll_->remove(session->fd());
+                                   });
     poll_->add(connFd, session);
   }
   pollThread.join();

@@ -19,4 +19,7 @@ void check_and_throw(bool condition, const char *fmt, Args &&... args) {
     throw Exception(fmt);
   }
 }
+
+template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 } // namespace queue_system

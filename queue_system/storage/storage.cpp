@@ -1,8 +1,8 @@
-#include "queue_manager.h"
+#include "storage.h"
 
 namespace queue_system {
 namespace storage {
-bool QueueManager::addOrganization(const std::string &companyName,
+bool Storage::addOrganization(const std::string &companyName,
                                    size_t servingQueueSize) {
   if (allWaitingQueues_.find(companyName) == allWaitingQueues_.end()) {
     return false;
@@ -12,7 +12,7 @@ bool QueueManager::addOrganization(const std::string &companyName,
       std::make_unique<ServingQueue>(servingQueueSize);
   return true;
 }
-bool QueueManager::insert_waiting(const std::string &companyName,
+bool Storage::insert_waiting(const std::string &companyName,
                                   const Data &data) {
   auto waitingQueue = allWaitingQueues_.find(companyName);
   if (waitingQueue == allWaitingQueues_.end()) {
@@ -23,7 +23,7 @@ bool QueueManager::insert_waiting(const std::string &companyName,
   return true;
 }
 
-std::optional<Data> QueueManager::pop_serving(const std::string &companyName) {
+std::optional<Data> Storage::pop_serving(const std::string &companyName) {
   auto servingQueue = allServingQueues_.find(companyName);
   if (servingQueue == allServingQueues_.end()) {
     return {};
@@ -43,7 +43,7 @@ std::optional<Data> QueueManager::pop_serving(const std::string &companyName) {
 }
 
 std::vector<Data>
-QueueManager::display_all_serving(const std::string &companyName) {
+Storage::display_all_serving(const std::string &companyName) {
   auto servingQueue = allServingQueues_.find(companyName);
   if (servingQueue == allServingQueues_.end()) {
     return {};
