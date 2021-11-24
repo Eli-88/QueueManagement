@@ -5,6 +5,8 @@
 namespace queue_system {
 namespace protocol {
 
+namespace {
+
 static ProtocolType decode_signup_json(const nlohmann::json &j) {
   const auto companyName = j.find("company");
   if (companyName != j.end()) {
@@ -31,6 +33,7 @@ static ProtocolType decode_pop_queue(const nlohmann::json &j) {
   }
   return std::monostate{};
 }
+} // namespace
 
 ProtocolType JsonDecoder::decode(const std::string &rawMsg) {
   try {

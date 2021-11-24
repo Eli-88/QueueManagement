@@ -12,11 +12,14 @@
 namespace queue_system {
 namespace server {
 
+namespace {
 template <typename... Args>
 void check_sock_err(int e, const char *fmt, Args &&... args) {
   check_and_throw<Server::ServerException>((e != -1), fmt,
                                            std::forward<Args>(args)...);
 }
+
+} // namespace
 
 Server::Server(const char *host, short port, Server::SessionType sessionType)
     : poll_(std::make_shared<Poll>()) {

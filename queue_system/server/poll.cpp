@@ -1,20 +1,22 @@
-#include "common.h"
 #include "poll.h"
+#include "common.h"
 #include "session.h"
-#include <iostream>
-#include <utility>
 #include <fcntl.h>
+#include <iostream>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <utility>
 
 namespace queue_system {
 namespace server {
 
+namespace {
 template <typename... Args>
 static void check_epoll_err(int err, const char *fmt, Args &&... args) {
   check_and_throw<Poll::PollException>((err != -1), fmt,
                                        std::forward<Args>(args)...);
 }
+} // namespace
 
 Poll::Poll() : epollFd_(epoll_create1(0)) {
   if (-1 == epollFd_) {
