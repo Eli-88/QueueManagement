@@ -1,9 +1,7 @@
 #pragma once
-#include <atomic>
 #include <memory>
 #include <optional>
 #include <queue>
-#include <shared_mutex>
 #include <vector>
 
 #include "data.h"
@@ -19,12 +17,10 @@ public:
 
 private:
   std::vector<Data> queue_;
-  std::atomic<size_t> head_{0};
-  std::atomic<size_t> tail_{0};
-  std::shared_mutex mux_;
+  size_t head_{0};
+  size_t tail_{0};
+  size_t size_{0};
   size_t index(size_t k) const;
-  bool isFull(size_t tail) const;
-  bool isEmpty(size_t head) const;
 };
 
 class WaitingQueue {
@@ -32,10 +28,10 @@ public:
   void insert(const Data &data);
   std::optional<Data> front();
   void pop();
+  bool empty() const;
 
 private:
   std::queue<Data> queue_;
-  std::shared_mutex mux_;
 };
 } // namespace storage
 } // namespace queue_system

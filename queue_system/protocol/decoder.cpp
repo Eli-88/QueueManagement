@@ -9,8 +9,11 @@ namespace {
 
 static ProtocolType decode_signup_json(const nlohmann::json &j) {
   const auto companyName = j.find("company");
-  if (companyName != j.end()) {
-    return SignUp(companyName->get<std::string>());
+  const auto queueSize = j.find("queue_size");
+  if (companyName != j.end() and queueSize != j.end()) {
+    if (companyName->is_string() and queueSize->is_number_integer()) {
+      return SignUp(companyName->get<std::string>(), queueSize->get<int>());
+    }
   }
   return std::monostate{};
 }
@@ -33,6 +36,14 @@ static ProtocolType decode_pop_queue(const nlohmann::json &j) {
   }
   return std::monostate{};
 }
+
+static ProtocolType decode_connect_display(const nlohmann::json &j) {
+  const auto companyName = j.find("company");
+  if(companyName != j.end()) {
+    return ConnectDisplay(companyName->get<std::string>());
+  }
+  return std::monostate{};
+}
 } // namespace
 
 ProtocolType JsonDecoder::decode(const std::string &rawMsg) {
@@ -52,6 +63,8 @@ ProtocolType JsonDecoder::decode(const std::string &rawMsg) {
         return decode_add_queue(decoded);
       case MsgType::POP_QUEUE:
         return decode_pop_queue(decoded);
+      case MsgType::CONNECT_DISPLAY:
+        return decode_connect_display(decoded);
       default:
         break;
       }

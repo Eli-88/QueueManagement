@@ -12,7 +12,11 @@ namespace protocol {
 class SignUp : public BaseMsg {
 public:
   static MsgType msg_type();
-  SignUp(const std::string &companyName);
+  SignUp(const std::string &companyName, int queueSize);
+  int queue_size() const;
+
+private:
+  int queueSize_;
 };
 
 class AddQueue : public BaseMsg {

@@ -43,5 +43,6 @@ private:
   std::shared_ptr<server::Server> server_;
   std::thread serverThread_;
   std::unordered_map<std::string, std::set<SessionPtr>> allDisplayConn_;
+  void update_display(const std::string &companyName);
 };
 } // namespace queue_system

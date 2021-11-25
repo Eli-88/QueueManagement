@@ -2,9 +2,12 @@
 
 namespace queue_system {
 namespace protocol {
-SignUp::SignUp(const std::string &companyName) : BaseMsg(companyName) {}
+SignUp::SignUp(const std::string &companyName, int queueSize)
+    : BaseMsg(companyName), queueSize_(queueSize) {}
 
 MsgType SignUp::msg_type() { return MsgType::SIGN_UP; }
+
+int SignUp::queue_size() const { return queueSize_; }
 
 AddQueue::AddQueue(const std::string &companyName, const Data &data)
     : BaseMsg(companyName), data_(data) {}
