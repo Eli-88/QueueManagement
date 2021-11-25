@@ -26,7 +26,7 @@ public:
   std::vector<SessionPtr> poll_once();
 
 private:
-  const int epollFd_;
+  int pollFd_;
   std::unordered_map<int, SessionPtr> allSessions_;
   static constexpr int POLL_MAX_EVENTS = 30;
   static constexpr int POLL_TIMEOUT_SEC = 1;
