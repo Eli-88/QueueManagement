@@ -1,6 +1,10 @@
 #pragma once
 #include "stdio.h"
 #include <utility>
+#include <thread>
+#include <future>
+#include <functional>
+#include <optional>
 
 namespace queue_system {
 
@@ -22,4 +26,17 @@ void check_and_throw(bool condition, const char *fmt, Args &&... args) {
 
 template <class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
+class Thread {
+public:
+  Thread(const std::function<void()> &impl);
+  Thread(const Thread &) = delete;
+  Thread(Thread &&others) : thread_(std::move(others.thread_)) {}
+  void join();
+
+private:
+  std::thread thread_;
+  std::future<void> future_;
+};
+
 } // namespace queue_system

@@ -15,6 +15,7 @@ add_subdirectory(protocol)
 add_executable(queue_system main.cpp)
 target_sources(queue_system PRIVATE
 queue_manager.cpp
+shared/common.cpp
 )
 
 target_link_libraries(queue_system server storage protocol Threads::Threads)
