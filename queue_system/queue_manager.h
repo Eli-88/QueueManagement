@@ -30,7 +30,6 @@ public:
   QueueManager(const char *host, short port);
   void run();
   void on_request(const std::string &, std::shared_ptr<server::Session>);
-  void wait();
 
   void on_sign_up(const protocol::SignUp &, SessionPtr);
   void on_add_queue(const protocol::AddQueue &, SessionPtr);
@@ -41,7 +40,6 @@ public:
 private:
   std::shared_ptr<storage::Storage> storage_;
   std::shared_ptr<server::Server> server_;
-  std::thread serverThread_;
   std::unordered_map<std::string, std::set<SessionPtr>> allDisplayConn_;
   void update_display(const std::string &companyName);
 };

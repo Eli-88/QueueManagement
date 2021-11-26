@@ -41,8 +41,6 @@ void QueueManager::on_request(const std::string &req,
              msg);
 }
 
-void QueueManager::wait() { serverThread_.join(); }
-
 void QueueManager::on_sign_up(const protocol::SignUp &msg, SessionPtr session) {
   if (session) {
     auto response = nlohmann::json();

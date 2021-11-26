@@ -14,9 +14,8 @@ namespace server {
 
 namespace {
 template <typename... Args>
-void check_sock_err(int e, const char *fmt, Args &&... args) {
-  check_and_throw<ServerException>((e != -1), fmt,
-                                           std::forward<Args>(args)...);
+void check_sock_err(int e, const char *fmt, Args &&...args) {
+  check_and_throw<ServerException>((e != -1), fmt, std::forward<Args>(args)...);
 }
 
 } // namespace
@@ -58,6 +57,7 @@ Server::~Server() { close(serverFd_); }
 void Server::stop() {
   isRunningServer_.store(false);
   isRunningPoll_.store(false);
+  close(serverFd_);
 }
 
 int Server::on_accept() {
@@ -70,25 +70,39 @@ int Server::on_accept() {
 }
 
 void Server::poll() {
-  while (isRunningPoll_.load()) {
-    auto allSessions = poll_->poll_once();
-    for (auto session : allSessions) {
-      session->handle_request();
+  try {
+    while (isRunningPoll_.load()) {
+      auto allSessions = poll_->poll_once();
+      for (auto session : allSessions) {
+        session->handle_request();
+      }
     }
+  } catch (const PollException &ex) {
+    printf("poll exception caught: %s\n", ex.what());
+  } catch (const std::exception &ex) {
+    printf("%s\n", ex.what());
   }
+  stop();
 }
 
 void Server::run(Session::Callback handler) {
-  Thread pollThread([this] { poll(); });
-  while (isRunningServer_.load()) {
-    const int connFd = on_accept();
-    auto session = sessionFactory_(connFd, handler,
-                                   [this](std::shared_ptr<Session> session) {
-                                     poll_->remove(session->fd());
-                                   });
-    poll_->add(connFd, session);
+  DetachableThread pollThread("QueueSystemPoll", [this] { poll(); });
+  try {
+    while (isRunningServer_.load()) {
+      const int connFd = on_accept();
+      auto session = sessionFactory_(connFd, handler,
+                                     [this](std::shared_ptr<Session> session) {
+                                       poll_->remove(session->fd());
+                                     });
+      poll_->add(connFd, session);
+      printf("exiting server\n");
+    }
+  } catch (const ServerException &ex) {
+    printf("Server exception: %s\n", ex.what());
+  } catch (const std::exception &ex) {
+    printf("%s\n", ex.what());
   }
-  pollThread.join();
+  stop();
 }
 
 } // namespace server
