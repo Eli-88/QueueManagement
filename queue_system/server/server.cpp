@@ -95,7 +95,6 @@ void Server::run(Session::Callback handler) {
                                        poll_->remove(session->fd());
                                      });
       poll_->add(connFd, session);
-      printf("exiting server\n");
     }
   } catch (const ServerException &ex) {
     printf("Server exception: %s\n", ex.what());
