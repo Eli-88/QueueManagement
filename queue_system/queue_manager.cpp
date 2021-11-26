@@ -14,15 +14,10 @@ QueueManager::QueueManager(const char *host, short port)
       storage_(std::make_shared<storage::Storage>()) {}
 
 void QueueManager::run() {
-  std::packaged_task<void()> task([this] {
-    server_->run([this](const std::string &req,
-                        std::shared_ptr<server::Session> session) {
-      on_request(req, session);
-    });
-  });
-  auto f = task.get_future();
-  serverThread_ = std::move(std::thread(std::move(task)));
-  f.get();
+  server_->run(
+      [this](const std::string &req, std::shared_ptr<server::Session> session) {
+        on_request(req, session);
+      });
 }
 
 void QueueManager::on_request(const std::string &req,

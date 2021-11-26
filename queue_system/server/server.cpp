@@ -79,7 +79,7 @@ void Server::poll() {
 }
 
 void Server::run(Session::Callback handler) {
-  std::thread pollThread([this] { poll(); });
+  Thread pollThread([this] { poll(); });
   while (isRunningServer_.load()) {
     const int connFd = on_accept();
     auto session = sessionFactory_(connFd, handler,
