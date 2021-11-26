@@ -21,7 +21,7 @@ void check_sock_err(int e, const char *fmt, Args &&...args) {
 } // namespace
 
 Server::Server(const char *host, short port, Server::SessionType sessionType)
-    : poll_(std::make_shared<Poll>()) {
+    : poll_(new Poll()) {
   switch (sessionType) {
   case SessionType::TCP:
     sessionFactory_ = TcpSession::make_session;
@@ -72,7 +72,7 @@ int Server::on_accept() {
 void Server::poll() {
   try {
     while (isRunningPoll_.load()) {
-      auto allSessions = poll_->poll_once();
+      auto allSessions = poll_.load()->poll_once();
       for (auto session : allSessions) {
         session->handle_request();
       }
@@ -92,9 +92,9 @@ void Server::run(Session::Callback handler) {
       const int connFd = on_accept();
       auto session = sessionFactory_(connFd, handler,
                                      [this](std::shared_ptr<Session> session) {
-                                       poll_->remove(session->fd());
+                                       poll_.load()->remove(session->fd());
                                      });
-      poll_->add(connFd, session);
+      poll_.load()->add(connFd, session);
     }
   } catch (const ServerException &ex) {
     printf("Server exception: %s\n", ex.what());

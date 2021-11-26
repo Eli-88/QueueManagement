@@ -26,7 +26,7 @@ public:
 private:
   using SessionFactory =
       std::function<std::shared_ptr<Session>(int, Session::Callback, Session::ErrCallback)>;
-  std::shared_ptr<Poll> poll_;
+  std::atomic<Poll *> poll_;
   int serverFd_{-1};
   std::atomic_bool isRunningServer_{true};
   std::atomic_bool isRunningPoll_{true};
