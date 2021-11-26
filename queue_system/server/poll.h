@@ -13,12 +13,6 @@ class Session;
 class Poll {
 public:
   using SessionPtr = std::shared_ptr<Session>;
-
-  struct PollException : public std::runtime_error {
-    PollException(const char *msg) : std::runtime_error(msg) {}
-  };
-
-public:
   Poll();
   ~Poll();
   void add(int fd, SessionPtr session);

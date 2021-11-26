@@ -39,4 +39,14 @@ private:
   std::future<void> future_;
 };
 
+namespace server {
+struct ServerException : public std::runtime_error {
+  ServerException(const char *msg) : std::runtime_error(msg) {}
+};
+
+struct PollException : public std::runtime_error {
+  PollException(const char *msg) : std::runtime_error(msg) {}
+};
+} // namespace server
+
 } // namespace queue_system

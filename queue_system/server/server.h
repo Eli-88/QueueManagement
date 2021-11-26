@@ -18,9 +18,6 @@ class Server {
 public:
   enum class SessionType { TCP };
 
-  struct ServerException : public std::runtime_error {
-    ServerException(const char *msg) : std::runtime_error(msg) {}
-  };
   Server(const char *host, short port, SessionType sessionType);
   ~Server();
   void run(Session::Callback handler);

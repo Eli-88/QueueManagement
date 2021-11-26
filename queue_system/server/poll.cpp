@@ -19,7 +19,7 @@ namespace server {
 namespace {
 template <typename... Args>
 static void check_epoll_err(int err, const char *fmt, Args &&...args) {
-  check_and_throw<Poll::PollException>((err != -1), fmt,
+  check_and_throw<PollException>((err != -1), fmt,
                                        std::forward<Args>(args)...);
 }
 } // namespace
