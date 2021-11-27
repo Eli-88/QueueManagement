@@ -1,6 +1,5 @@
 #include "server.h"
 #include "poll.h"
-#include "session.h"
 #include "tcp_session.h"
 
 #include <arpa/inet.h>
@@ -21,7 +20,7 @@ void check_sock_err(int e, const char *fmt, Args &&...args) {
 } // namespace
 
 Server::Server(const char *host, short port, Server::SessionType sessionType)
-    : poll_(new Poll()) {
+    : poll_(std::make_unique<Poll>()) {
   switch (sessionType) {
   case SessionType::TCP:
     sessionFactory_ = TcpSession::make_session;
@@ -50,6 +49,8 @@ Server::Server(const char *host, short port, Server::SessionType sessionType)
 
   err = listen(serverFd_, 2048);
   check_sock_err(err, "unable to listen for server");
+
+  poll_->add(serverFd_);
 }
 
 Server::~Server() { close(serverFd_); }
@@ -69,39 +70,41 @@ int Server::on_accept() {
   return connFd;
 }
 
-void Server::poll() {
-  try {
-    while (isRunningPoll_.load()) {
-      auto allSessions = poll_.load()->poll_once();
-      for (auto session : allSessions) {
-        session->handle_request();
+void Server::run(Session::Callback handler) {
+  while (isRunningServer_) {
+    const auto allFds = poll_->poll_once();
+    for (const auto fd : allFds) {
+      if (fd == serverFd_) {
+        // handle new connection
+        const auto connFd = on_accept();
+        poll_->add(connFd);
+        auto session =
+            sessionFactory_(connFd, handler, [this](SessionPtr session) {
+              poll_->remove(session->fd());
+              auto iter = allSessions_.find(session->fd());
+              check_and_throw<ServerException>(
+                  (iter != allSessions_.end()),
+                  "fd[%d] not found, not suppose to happen", session->fd());
+              iter->second.reset();
+              allSessions_.erase(iter);
+            });
+        auto sessionIter = allSessions_.find(connFd);
+        if (sessionIter != allSessions_.end()) {
+          sessionIter->second.reset();
+          sessionIter->second = session;
+        } else {
+          allSessions_[connFd] = session;
+        }
+      } else {
+        // handle connected session
+        auto iter = allSessions_.find(fd);
+        check_and_throw<ServerException>(
+            (iter != allSessions_.end()),
+            "file descriptor[%d] not found, not suppose to happen", fd);
+        iter->second->handle_request();
       }
     }
-  } catch (const PollException &ex) {
-    printf("poll exception caught: %s\n", ex.what());
-  } catch (const std::exception &ex) {
-    printf("%s\n", ex.what());
   }
-  stop();
-}
-
-void Server::run(Session::Callback handler) {
-  DetachableThread pollThread("QueueSystemPoll", [this] { poll(); });
-  try {
-    while (isRunningServer_.load()) {
-      const int connFd = on_accept();
-      auto session = sessionFactory_(connFd, handler,
-                                     [this](std::shared_ptr<Session> session) {
-                                       poll_.load()->remove(session->fd());
-                                     });
-      poll_.load()->add(connFd, session);
-    }
-  } catch (const ServerException &ex) {
-    printf("Server exception: %s\n", ex.what());
-  } catch (const std::exception &ex) {
-    printf("%s\n", ex.what());
-  }
-  stop();
 }
 
 } // namespace server

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 namespace queue_system {
@@ -12,16 +11,14 @@ class Session;
 
 class Poll {
 public:
-  using SessionPtr = std::shared_ptr<Session>;
   Poll();
   ~Poll();
-  void add(int fd, SessionPtr session);
+  void add(int fd);
   void remove(int fd);
-  std::vector<SessionPtr> poll_once();
+  std::vector<int> poll_once();
 
 private:
   int pollFd_;
-  std::unordered_map<int, SessionPtr> allSessions_;
   static constexpr int POLL_MAX_EVENTS = 30;
   static constexpr int POLL_TIMEOUT_SEC = 1;
 };

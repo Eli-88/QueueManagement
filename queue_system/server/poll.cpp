@@ -19,8 +19,7 @@ namespace server {
 namespace {
 template <typename... Args>
 static void check_epoll_err(int err, const char *fmt, Args &&...args) {
-  check_and_throw<PollException>((err != -1), fmt,
-                                       std::forward<Args>(args)...);
+  check_and_throw<PollException>((err != -1), fmt, std::forward<Args>(args)...);
 }
 } // namespace
 
@@ -38,10 +37,7 @@ Poll::Poll() {
 
 Poll::~Poll() { close(pollFd_); }
 
-void Poll::add(int fd, SessionPtr request) {
-  allSessions_[fd].reset();
-  allSessions_[fd] = request;
-
+void Poll::add(int fd) {
 #ifdef __linux__
   struct epoll_event ev {};
   ev.data.fd = fd;
@@ -57,7 +53,6 @@ void Poll::add(int fd, SessionPtr request) {
 }
 
 void Poll::remove(int fd) {
-  allSessions_[fd].reset();
 #ifdef __linux__
   struct epoll_event ev {};
   ev.data.fd = fd;
@@ -71,8 +66,8 @@ void Poll::remove(int fd) {
   check_epoll_err(err, "epoll fail to remove fd[%d]", fd);
 }
 
-std::vector<Poll::SessionPtr> Poll::poll_once() {
-  std::vector<SessionPtr> requests;
+std::vector<int> Poll::poll_once() {
+  std::vector<int> requests;
 #ifdef __linux__
   struct epoll_event ev[POLL_MAX_EVENTS];
   const auto num_ev =
@@ -80,12 +75,7 @@ std::vector<Poll::SessionPtr> Poll::poll_once() {
   check_epoll_err(num_ev, "epoll poll once failed");
   for (int i = 0; i < num_ev; i++) {
     if (EPOLLIN == ev[i].events) {
-      const auto fd = ev[i].data.fd;
-      auto req = allSessions_.find(fd);
-      check_and_throw<PollException>(
-          (req != allSessions_.end()),
-          "this should not happen: unable to find fd[%d] in allRequest", fd);
-      requests.push_back(req->second);
+      requests.push_back(ev[i].data.fd);
     }
   }
 #endif
@@ -97,12 +87,7 @@ std::vector<Poll::SessionPtr> Poll::poll_once() {
   check_epoll_err(num_ev, "kqueue polling failed");
   for (int i = 0; i < num_ev; i++) {
     if (ev[i].filter == EVFILT_READ) {
-      const int fd = ev[i].ident;
-      auto req = allSessions_.find(fd);
-      check_and_throw<PollException>(
-          (req != allSessions_.end()),
-          "this should not happen: unable to find fd[%d] in allRequest", fd);
-      requests.push_back(req->second);
+      requests.push_back(ev[i].ident);
     }
   }
 #endif
