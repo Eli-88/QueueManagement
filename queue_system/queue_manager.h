@@ -5,6 +5,7 @@
 #include <thread>
 #include <unordered_map>
 #include <variant>
+#include "session_observer.h"
 
 namespace queue_system {
 
@@ -24,7 +25,7 @@ namespace storage {
 class Storage;
 }
 
-class QueueManager {
+class QueueManager: public ISessionObserver {
 public:
   using SessionPtr = std::shared_ptr<server::Session>;
   QueueManager(const char *host, short port);
@@ -36,11 +37,13 @@ public:
   void on_pop_queue(const protocol::PopQueue &, SessionPtr);
   void on_connect_display(const protocol::ConnectDisplay &, SessionPtr);
   void on_invalid(const std::monostate &, SessionPtr);
+  void on_session_close(SessionPtr) override;
 
 private:
   std::shared_ptr<storage::Storage> storage_;
   std::shared_ptr<server::Server> server_;
   std::unordered_map<std::string, std::set<SessionPtr>> allDisplayConn_;
+  std::unordered_map<SessionPtr, std::string> sessionMapping_;
   void update_display(const std::string &companyName);
 };
 } // namespace queue_system

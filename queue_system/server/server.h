@@ -3,9 +3,11 @@
 #include <iostream>
 #include <memory>
 #include <unordered_map>
+#include <set>
 
 #include "common.h"
 #include "session.h"
+#include "session_observer.h"
 
 namespace queue_system {
 namespace server {
@@ -20,6 +22,7 @@ public:
   ~Server();
   void run(Session::Callback handler);
   void stop();
+  void add_session_observer(ISessionObserver* session);
 
 private:
   using SessionPtr = std::shared_ptr<Session>;
@@ -31,6 +34,7 @@ private:
   std::atomic_bool isRunningPoll_{true};
   SessionFactory sessionFactory_;
   std::unordered_map<int, SessionPtr> allSessions_; 
+  std::set<ISessionObserver*> allSessionObservers_;
   int on_accept();
 };
 

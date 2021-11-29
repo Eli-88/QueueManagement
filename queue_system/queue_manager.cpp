@@ -11,7 +11,9 @@ namespace queue_system {
 QueueManager::QueueManager(const char *host, short port)
     : server_(std::make_shared<server::Server>(
           host, port, server::Server::SessionType::TCP)),
-      storage_(std::make_shared<storage::Storage>()) {}
+      storage_(std::make_shared<storage::Storage>()) {
+        server_->add_session_observer(this);
+      }
 
 void QueueManager::run() {
   server_->run(
@@ -112,6 +114,19 @@ void QueueManager::on_invalid(const std::monostate &, SessionPtr session) {
     response["result"] = "invalid request";
     session->on_response(response.dump());
     session->handle_close();
+  }
+}
+
+void QueueManager::on_session_close(SessionPtr session) {
+  auto sessionIter = sessionMapping_.find(session);
+  if (sessionIter != sessionMapping_.end()) {
+    const auto& [_, companyName] = *sessionIter; 
+    auto connIter = allDisplayConn_.find(companyName);
+    if(connIter != allDisplayConn_.end()) {
+      auto &[_, connSets] = *connIter;
+      connSets.erase(session);
+    }
+    sessionMapping_.erase(sessionIter);
   }
 }
 

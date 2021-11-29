@@ -61,6 +61,10 @@ void Server::stop() {
   close(serverFd_);
 }
 
+void Server::add_session_observer(ISessionObserver *observer) {
+  allSessionObservers_.insert(observer);
+}
+
 int Server::on_accept() {
   sockaddr_in remoteAddr;
   socklen_t addrLen = sizeof(remoteAddr);
@@ -80,6 +84,9 @@ void Server::run(Session::Callback handler) {
         poll_->add(connFd);
         auto session =
             sessionFactory_(connFd, handler, [this](SessionPtr session) {
+              for(auto sessionObserver: allSessionObservers_) {
+                sessionObserver->on_session_close(session);
+              }
               poll_->remove(session->fd());
               auto iter = allSessions_.find(session->fd());
               check_and_throw<ServerException>(
